@@ -1,0 +1,47 @@
+[
+  {
+    "Code": 32807846,
+    "SetCode": null,
+    "Name": "增援",
+    "Des": "从卡组把1只4星以下的战士族怪兽加入手卡。",
+    "CardType": 2,
+    "CardDeType": 4,
+    "Level": 0,
+    "CardAttribute": 0,
+    "CardRace": 0,
+    "Attack": 0,
+    "Attack_Type": 4,
+    "Defence": 0,
+    "Defence_Type": 4
+  },
+  {
+    "Code": 46130346,
+    "SetCode": null,
+    "Name": "火球",
+    "Des": "①：给与对方500伤害。",
+    "CardType": 2,
+    "CardDeType": 4,
+    "Level": 0,
+    "CardAttribute": 0,
+    "CardRace": 0,
+    "Attack": 0,
+    "Attack_Type": 4,
+    "Defence": 0,
+    "Defence_Type": 4
+  },
+  {
+    "Code": 48305365,
+    "SetCode": null,
+    "Name": "巨斧袭击者",
+    "Des": "持斧的战士。单手挥舞斧头的攻击相当强劲。",
+    "CardType": 1,
+    "CardDeType": 1,
+    "Level": 4,
+    "CardAttribute": 1,
+    "CardRace": 1,
+    "Attack": 1700,
+    "Attack_Type": 4,
+    "Defence": 1150,
+    "Defence_Type": 4
+  }
+]
