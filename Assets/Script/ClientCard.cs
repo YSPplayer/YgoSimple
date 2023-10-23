@@ -33,6 +33,24 @@ namespace TCGame.Client
             this.Attack = new Value(Attack, Attack_Type);
             this.Defence = new Value(Defence, Defence_Type);
         }
+        public bool HasAttribute(CardAttribute cardAttribute)
+        {
+            return (CardAttribute & cardAttribute) != 0;
+        }
+
+        public bool HasRace(CardRace cardRace)
+        {
+            return (CardRace & cardRace) != 0;
+        }
+
+        public bool HasType(CardType cardType)
+        {
+            return (CardType & cardType) != 0;
+        }
+        public bool HasDeType(CardDeType cardDeType)
+        {
+            return (CardDeType & cardDeType) != 0;
+        }
 
     }
 
