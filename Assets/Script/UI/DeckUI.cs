@@ -10,7 +10,7 @@ namespace TCGame.Client.UI
 {
     public class DeckUI : MonoBehaviour
     {
-        public GameObject Card_Menu_Data_PreFab;//卡片预制体
+        public GameObject Card_Menu_Data_PreFab;//卡片列表预制体
         public GameObject DeckContent;//卡组列表所在的主类
         public GameObject Card_Type_List;//卡片种类筛选列表
         public GameObject Card_Little_Type_List;//卡片子种类筛选列表
@@ -19,7 +19,7 @@ namespace TCGame.Client.UI
         public GameObject Star_Input;//星数文本
         public GameObject Search_Input;//搜索文本
         public Button Search_Button;//搜索按钮
-        public Text Text_Second_Deck;//副卡组文本
+        public Text Text_Search;//副卡组文本
 
 
         public VerticalLayoutGroup DeckGroup;//卡组列表
@@ -31,8 +31,41 @@ namespace TCGame.Client.UI
         public Dropdown Drop_Race;
 
         private List<GameObject> Card_Menu_Datas = new List<GameObject>();//预制体
+
+        //卡片组内部的UI对象
+        public static List<GameObject> Main_Card_PreFabs = new List<GameObject>();
+        public static List<GameObject> Extra_Card_PreFabs = new List<GameObject>();
+        public static List<GameObject> Second_Card_PreFabs = new List<GameObject>();
+
+        //我们编辑卡组左边的预制体
+        public static Image cardImage;
+        public static Text name_Text;
+        public static Text des_Text;
+        public static Text text_Main_Deck;
+        public static Text text_Extra_Deck;
+        public static Text text_Second_Deck;
+        public static GameObject main_deck_container;
+        public static GameObject extra_deck_container;
+        public static GameObject second_deck_container;
+        public static GridLayoutGroup mainDeckGroup;
+        public static GridLayoutGroup extraDeckGroup;
+        public static GridLayoutGroup secondDeckGroup;
+
         public void LoadUI()
         {
+            cardImage = GameObject.Find("Card_Data_Pics").GetComponentInChildren<Image>();
+            name_Text = GameObject.Find("Message_Name_Text").GetComponentInChildren<Text>();
+            des_Text = GameObject.Find("Message_Des_Context").GetComponentInChildren<Text>();
+            main_deck_container = GameObject.Find("Main_Deck");
+            extra_deck_container = GameObject.Find("Extra_Deck");
+            second_deck_container = GameObject.Find("Second_Deck");
+            mainDeckGroup = main_deck_container.GetComponentInChildren<GridLayoutGroup>();
+            extraDeckGroup = extra_deck_container.GetComponentInChildren<GridLayoutGroup>();
+            secondDeckGroup = second_deck_container.GetComponentInChildren<GridLayoutGroup>();
+            text_Main_Deck = GameObject.Find("Text_Main_Deck").GetComponentInChildren<Text>();
+            text_Extra_Deck = GameObject.Find("Text_Extra_Deck").GetComponentInChildren<Text>();
+            text_Second_Deck = GameObject.Find("Text_Second_Deck").GetComponentInChildren<Text>();
+
             DeckGroup = DeckContent.GetComponentInChildren<VerticalLayoutGroup>();
             Drop_Card_Type = Card_Type_List.GetComponentInChildren<Dropdown>();
             Drop_Little_Type = Card_Little_Type_List.GetComponentInChildren<Dropdown>();
@@ -50,6 +83,15 @@ namespace TCGame.Client.UI
             Drop_Att.interactable = false;
             Drop_Race.interactable = false;
             Star_InputField.interactable = false;
+
+            //初始化UI上面的文本
+            initializeUIStr();
+        }
+        public void initializeUIStr()
+        {
+            Text_Search.text = $"{Config.ConfigText[(int)ConfigKey.SearchResult]}：0";
+            text_Main_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckMainText]}：0";
+            text_Extra_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckExtraText]}：0";
         }
         public void LoadEvent()
         {
@@ -96,7 +138,7 @@ namespace TCGame.Client.UI
                 Star_InputField.interactable = false;
                 RefreshUI();
                 if (index == spell)  SetListOptions(Drop_Little_Type, new List<string>() { Config.DeTypes[CardDeType.SNormal] }, false);
-                else  SetListOptions(Drop_Little_Type, new List<string>() { Config.DeTypes[CardDeType.SNormal] }, false);
+                else  SetListOptions(Drop_Little_Type, new List<string>() { Config.DeTypes[CardDeType.MNormal],Config.DeTypes[CardDeType.Fusion] }, false);
             }
         }
         //搜索卡片
@@ -104,6 +146,14 @@ namespace TCGame.Client.UI
         {
             ClearCard();
             GetCard();
+        }
+        public static void ChangeCardMessage(string path,string name,string text)
+        {
+            //设置图片
+            cardImage.sprite = Resources.Load<Sprite>(path);
+            //修改文本
+            name_Text.text = name;
+            des_Text.text = text;
         }
 
         public void SetListOptions(Dropdown dropdown, List<string> options,bool isNone)
@@ -193,19 +243,16 @@ namespace TCGame.Client.UI
                     } 
                 }
                 Card_Menu_Data.transform.SetParent(DeckContent.transform);//设置父类物体
-                //设置我们的类脚本对象
                 Card_Menu_Data_PreFab_Event event_script = Card_Menu_Data.GetComponent<Card_Menu_Data_PreFab_Event>();
-                event_script.code = card.Code;
-                event_script.cardName = card.Name;
-                event_script.cardDes = GetCardDesStr(card);
+                event_script.card = card;
                 //设置物体可见
                 Card_Menu_Data.SetActive(true);
             }
             //修改搜索结果
-            Text_Second_Deck.text = $"{Config.ConfigText[(int)ConfigKey.SearchResult]}：{result}";
+            Text_Search.text = $"{Config.ConfigText[(int)ConfigKey.SearchResult]}：{result}";
 
         }
-        private string GetCardDesStr(ClientCard card)
+        public static string GetCardDesStr(ClientCard card)
         {
             string str = "";
             if (card.HasType(CardType.Monster))
@@ -218,7 +265,7 @@ namespace TCGame.Client.UI
             }
             return str;
         }
-        private string GetTypeStr(CardType type, CardDeType deType)
+        private static string GetTypeStr(CardType type, CardDeType deType)
         {
             int iType = (int)type;
             int iDeType = (int)deType;
@@ -241,7 +288,7 @@ namespace TCGame.Client.UI
             }
             return str.Substring(0, str.Length - 1);
         }
-        private string GetAttributesStr(CardAttribute attribute)
+        private static string GetAttributesStr(CardAttribute attribute)
         {
             int iAttribute = (int)attribute;
             string str = "";
@@ -255,7 +302,7 @@ namespace TCGame.Client.UI
             }
             return str.Substring(0, str.Length - 1);
         }
-        private string GetRaceStr(CardRace race)
+        private static string GetRaceStr(CardRace race)
         {
             int iRace = (int)race;
             string str = "";
@@ -270,7 +317,7 @@ namespace TCGame.Client.UI
             return str.Substring(0, str.Length - 1);
         }
 
-        private string GetPowerStr(Value value)
+        private static string GetPowerStr(Value value)
         {
             switch (value.Value_Type)
             {

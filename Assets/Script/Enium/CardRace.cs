@@ -8,7 +8,7 @@
         Fiend = 0x8,
         Zombie = 0x10,
         Machine = 0x20,
-        Aqua = 0x40,
+        Aqua = 0x40,//水族
         Pyro = 0x80,
         Rock = 0x100,
         WindBeast = 0x200,

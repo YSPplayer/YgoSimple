@@ -52,6 +52,12 @@ namespace TCGame.Client
             return (CardDeType & cardDeType) != 0;
         }
 
+        public bool IsExtraCard()
+        {
+            return (CardDeType & CardDeType.Fusion) != 0;
+        }
+
+
     }
 
 

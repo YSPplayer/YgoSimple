@@ -13,6 +13,7 @@ namespace TCGame.Client
         public static List<ClientCard> Cards { get; private set; }//我们的数据库
         public static Config Config { get; private set; }//配置文件
         public static DeckManage deckManage { get; private set; }//初始化我们的对象类
+
         private void Awake()
         {
             LoadCardsDataFromJson();

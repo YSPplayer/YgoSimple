@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace TCGame.Client.Deck
 {
-    public class DeckManage : MonoBehaviour
+    public class DeckManage
     {
         public DeckManage()
         {

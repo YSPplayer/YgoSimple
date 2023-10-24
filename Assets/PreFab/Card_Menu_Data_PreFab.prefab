@@ -409,7 +409,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a29fd130012272e4c9db4cf7ab492c00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Card_Menu_Data_PreFab: {fileID: 0}
-  Card_Data_Pics: {fileID: 0}
   bgImage: {fileID: 130131811478253553}
   code: 0
+  Card_PreFab: {fileID: 976610904682776122, guid: f967e40a5932ec2448b4871b715b76c3, type: 3}
+  cardName: 
+  cardDes: 

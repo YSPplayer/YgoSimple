@@ -3176,7 +3176,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u526F\u5361\u7EC4\uFF1A80"
+  m_Text: 
 --- !u!222 &694250620
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3539,7 +3539,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u4E3B\u5361\u7EC4\uFF1A80"
+  m_Text: 
 --- !u!222 &743479833
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6198,7 +6198,7 @@ GameObject:
   - component: {fileID: 1345690045}
   - component: {fileID: 1345690044}
   m_Layer: 5
-  m_Name: EXtra_Deck
+  m_Name: Extra_Deck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6245,7 +6245,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 96.1173, y: 139.3701}
-  m_Spacing: {x: -65, y: 0}
+  m_Spacing: {x: -30, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 1
 --- !u!114 &1345690045
@@ -6487,7 +6487,7 @@ GameObject:
   - component: {fileID: 1383521824}
   - component: {fileID: 1383521823}
   m_Layer: 5
-  m_Name: Text_Second_Deck
+  m_Name: 'Text_Search '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6780,7 +6780,7 @@ MonoBehaviour:
   Star_Input: {fileID: 793123307}
   Search_Input: {fileID: 438040355}
   Search_Button: {fileID: 582870446}
-  Text_Second_Deck: {fileID: 1383521823}
+  Text_Search: {fileID: 1383521823}
   DeckGroup: {fileID: 0}
   Star_InputField: {fileID: 0}
   Search_InputField: {fileID: 0}
