@@ -33,6 +33,11 @@ namespace TCGame.Client
             this.Attack = new Value(Attack, Attack_Type);
             this.Defence = new Value(Defence, Defence_Type);
         }
+        public bool IsCode(int code)
+        {
+            return Code == code;
+        }
+
         public bool HasAttribute(CardAttribute cardAttribute)
         {
             return (CardAttribute & cardAttribute) != 0;
@@ -42,6 +47,7 @@ namespace TCGame.Client
         {
             return (CardRace & cardRace) != 0;
         }
+
 
         public bool HasType(CardType cardType)
         {
@@ -57,6 +63,10 @@ namespace TCGame.Client
             return (CardDeType & CardDeType.Fusion) != 0;
         }
 
+        public int GetCode()
+        {
+            return Code;
+        }
 
     }
 

@@ -1062,7 +1062,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'sfdf '
+  m_Text: 
 --- !u!222 &214724366
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6771,6 +6771,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a65ea097060a1c4199b4d372d8cea54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Card_PreFab: {fileID: 976610904682776122, guid: f967e40a5932ec2448b4871b715b76c3, type: 3}
   Card_Menu_Data_PreFab: {fileID: 130131811478253567, guid: e49ee536bdefb2143b2af09eb42e1adf, type: 3}
   DeckContent: {fileID: 1084255140}
   Card_Type_List: {fileID: 1045547588}
@@ -6780,14 +6781,20 @@ MonoBehaviour:
   Star_Input: {fileID: 793123307}
   Search_Input: {fileID: 438040355}
   Search_Button: {fileID: 582870446}
+  Save_Button: {fileID: 1512790367}
+  Save_As_Button: {fileID: 1798763324}
   Text_Search: {fileID: 1383521823}
+  Save_As_Input: {fileID: 1063474829}
+  Deck_List: {fileID: 1463133060}
   DeckGroup: {fileID: 0}
   Star_InputField: {fileID: 0}
   Search_InputField: {fileID: 0}
+  Save_As_InputField: {fileID: 0}
   Drop_Card_Type: {fileID: 0}
   Drop_Little_Type: {fileID: 0}
   Drop_Att: {fileID: 0}
   Drop_Race: {fileID: 0}
+  Drop_Deck_List: {fileID: 0}
 --- !u!114 &1416874444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7098,29 +7105,7 @@ MonoBehaviour:
   m_ItemImage: {fileID: 0}
   m_Value: 0
   m_Options:
-    m_Options:
-    - m_Text: 'sfdf '
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u65AF\u987F\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u65AF\u987Fad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
-    - m_Text: "\u963F\u6253\u7B97ad\u554A"
-      m_Image: {fileID: 0}
+    m_Options: []
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

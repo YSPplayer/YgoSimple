@@ -3,13 +3,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using TCGame.Client.Enum;
 using TCGame.Client.Event;
+using TCGame.Client.Deck;
 using System.Linq;
+using Newtonsoft.Json;
 using System;
+using System.IO;
+using System.Text;
 
 namespace TCGame.Client.UI
 {
     public class DeckUI : MonoBehaviour
     {
+        public GameObject Card_PreFab;//卡片预制体
         public GameObject Card_Menu_Data_PreFab;//卡片列表预制体
         public GameObject DeckContent;//卡组列表所在的主类
         public GameObject Card_Type_List;//卡片种类筛选列表
@@ -19,16 +24,21 @@ namespace TCGame.Client.UI
         public GameObject Star_Input;//星数文本
         public GameObject Search_Input;//搜索文本
         public Button Search_Button;//搜索按钮
+        public Button Save_Button;//保存按钮
+        public Button Save_As_Button;//另存按钮
         public Text Text_Search;//副卡组文本
-
+        public GameObject Save_As_Input;//另存
+        public GameObject Deck_List;//保存
 
         public VerticalLayoutGroup DeckGroup;//卡组列表
         public InputField Star_InputField;
         public InputField Search_InputField;
+        public InputField Save_As_InputField;
         public Dropdown Drop_Card_Type;
         public Dropdown Drop_Little_Type;
         public Dropdown Drop_Att;
         public Dropdown Drop_Race;
+        public Dropdown Drop_Deck_List;
 
         private List<GameObject> Card_Menu_Datas = new List<GameObject>();//预制体
 
@@ -69,12 +79,14 @@ namespace TCGame.Client.UI
             DeckGroup = DeckContent.GetComponentInChildren<VerticalLayoutGroup>();
             Drop_Card_Type = Card_Type_List.GetComponentInChildren<Dropdown>();
             Drop_Little_Type = Card_Little_Type_List.GetComponentInChildren<Dropdown>();
+            Drop_Deck_List = Deck_List.GetComponentInChildren<Dropdown>();
             Drop_Att = Att_List.GetComponentInChildren<Dropdown>();
             Drop_Race = Race_List.GetComponentInChildren<Dropdown>();
             Star_InputField = Star_Input.GetComponentInChildren<InputField>();
             Search_InputField = Search_Input.GetComponentInChildren<InputField>();
+            Save_As_InputField = Save_As_Input.GetComponentInChildren<InputField>();
 
-            SetListOptions(Drop_Card_Type, Config.Types.Values.ToList(),true);
+            SetListOptions(Drop_Card_Type, Config.Types.Values.ToList(), true);
             SetListOptions(Drop_Little_Type, new List<string>(), false); ;
             SetListOptions(Drop_Att, Config.Attributes.Values.ToList(), true);
             SetListOptions(Drop_Race, Config.Races.Values.ToList(), true);
@@ -86,17 +98,166 @@ namespace TCGame.Client.UI
 
             //初始化UI上面的文本
             initializeUIStr();
+
+            //初始化我们的卡组以及组件
+            LoadDeck();
         }
+        private void LoadDeck()
+        {
+            if (Drop_Deck_List.options.Count <= 0) return;
+            //加载我们的卡组到我们的UI
+            string text = Drop_Deck_List.options[Drop_Deck_List.value].text;
+            if (text.Equals("")) return;
+            string filePath = $"{Application.dataPath}/Resources/Deck/{text}.json";
+            if (!File.Exists(filePath)) return;
+            GameDeck deck = null;
+            try
+            {
+                //防止有人修改我们的jsond造成读取不了的错误
+                deck = JsonConvert.DeserializeObject<GameDeck>(File.ReadAllText(filePath, Encoding.UTF8));
+            }
+            catch (Exception e) { Log.WriteLog(e.Message); }
+            if (deck == null) return;
+            //先预先设置spcing的尺寸
+            mainDeckGroup.spacing = new Vector2(deck.MainSpacing[0], deck.MainSpacing[1]);
+            extraDeckGroup.spacing = new Vector2(deck.ExtraSpacing[0], deck.ExtraSpacing[1]);
+            secondDeckGroup.spacing = new Vector2(deck.SecondSpacing[0], deck.SecondSpacing[1]);
+
+            //创建我们的UI对象并加载到对应卡组中，我感觉这么遍历很浪费，后面优化一下
+            foreach (var code in deck.MianCodes)
+            {
+                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
+                if (card == null) continue;
+                CreateCardGameObject(card);
+            }
+            foreach (var code in deck.ExtraCodes)
+            {
+                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
+                if (card == null) continue;
+                CreateCardGameObject(card);
+            }
+            foreach (var code in deck.SecondCodes)
+            {
+                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
+                if (card == null) continue;
+                CreateCardGameObject(card);
+            }
+            text_Main_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckMainText]}：{Main_Card_PreFabs.Count}";
+            text_Extra_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckExtraText]}：{Extra_Card_PreFabs.Count}";
+        }
+        public void CreateCardGameObject(ClientCard card)
+        {
+            GameObject Card_Data = Instantiate(Card_PreFab);
+            Image image = Card_Data.GetComponentInChildren<Image>();
+            image.sprite = Resources.Load<Sprite>($"Pics/{ card.Code }");
+            Card_Event event_script = Card_Data.GetComponent<Card_Event>();
+            event_script.card = card;
+            Card_Data.SetActive(true);
+            if (!card.IsExtraCard())
+            {
+                Card_Data.transform.SetParent(mainDeckGroup.transform);
+                Main_Card_PreFabs.Add(Card_Data);
+            }
+            else
+            {
+                Card_Data.transform.SetParent(extraDeckGroup.transform);
+                Extra_Card_PreFabs.Add(Card_Data);
+            }
+
+        }
+
         public void initializeUIStr()
         {
             Text_Search.text = $"{Config.ConfigText[(int)ConfigKey.SearchResult]}：0";
             text_Main_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckMainText]}：0";
             text_Extra_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckExtraText]}：0";
+
+            Drop_Deck_List.options.Clear();
+            //这里初始化我们的decklist
+            try
+            {
+                string[] deckFiles = Directory.GetFiles($"{Application.dataPath}/Resources/Deck/", "*.json");
+                List<string> deckFilesList = new List<string>();
+                foreach (string filePath in deckFiles)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                    deckFilesList.Add(fileName);
+                }
+                //预先加载我们的json文本内容
+                Drop_Deck_List.AddOptions(deckFilesList);
+            }
+            catch (Exception e) { }
+
         }
         public void LoadEvent()
         {
             Search_Button.onClick.AddListener(SearchCard);
+            Save_As_Button.onClick.AddListener(SaveDeckAs);
+            Save_Button.onClick.AddListener(SaveDeck);
             Drop_Card_Type.onValueChanged.AddListener(SelectDropType);
+        }
+        private void SaveDeck()
+        {
+            string text = Drop_Deck_List.options[Drop_Deck_List.value].text;
+            if (text.Equals("")) return;
+            //保存我们当前的卡组数据到json
+            List<int> mainCodes = new List<int>();
+            List<int> extraCodes = new List<int>();
+            List<int> secondCodes = new List<int>();
+            foreach (var prefab in Main_Card_PreFabs)
+            {
+                ClientCard card = prefab.GetComponent<Card_Event>().card;
+                mainCodes.Add(card.GetCode());
+            }
+            foreach (var prefab in Extra_Card_PreFabs)
+            {
+                ClientCard card = prefab.GetComponent<Card_Event>().card;
+                extraCodes.Add(card.GetCode());
+            }
+            foreach (var prefab in Second_Card_PreFabs)
+            {
+                ClientCard card = prefab.GetComponent<Card_Event>().card;
+                secondCodes.Add(card.GetCode());
+            }
+            GameDeck deck = new GameDeck(mainCodes, extraCodes, secondCodes,new float[] { mainDeckGroup.spacing.x, mainDeckGroup.spacing.y },
+                new float[] { extraDeckGroup.spacing.x, extraDeckGroup.spacing.y }, new float[] { secondDeckGroup.spacing.x, secondDeckGroup.spacing.y });
+            string json = JsonConvert.SerializeObject(deck);
+            string path = $"{Application.dataPath}/Resources/Deck/{text}.json";
+            try
+            {
+                File.WriteAllText(path, json);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
+                return;
+            }
+            Debug.Log("保存成功！");
+        }
+        private void SaveDeckAs()
+        {
+            string text = Save_As_InputField.text;
+            if (text.Equals(""))
+            {
+                Debug.Log("请输入文字！");
+                return;
+            }
+            GameDeck deck = new GameDeck(null, null, null,null,null,null);
+            string json = JsonConvert.SerializeObject(deck);
+            string path = $"{Application.dataPath}/Resources/Deck/{text}.json";
+            try
+            {
+                File.WriteAllText(path, json);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
+                return;
+            }
+            Debug.Log("写入成功！");
+            //这里我们更新一下上面的列表
+            Drop_Deck_List.AddOptions(new List<string> { text });
+
         }
         private void RefreshUI()
         {
@@ -240,7 +401,7 @@ namespace TCGame.Client.UI
                             Des = $"{GetPowerStr(card.Attack)}/{GetPowerStr(card.Defence)}";
                         }
                         child.GetComponentInChildren<Text>().text = Des;
-                    } 
+                    }
                 }
                 Card_Menu_Data.transform.SetParent(DeckContent.transform);//设置父类物体
                 Card_Menu_Data_PreFab_Event event_script = Card_Menu_Data.GetComponent<Card_Menu_Data_PreFab_Event>();
