@@ -6783,6 +6783,8 @@ MonoBehaviour:
   Search_Button: {fileID: 582870446}
   Save_Button: {fileID: 1512790367}
   Save_As_Button: {fileID: 1798763324}
+  Delete_Button: {fileID: 1738673737}
+  Exit_Button: {fileID: 19881320}
   Text_Search: {fileID: 1383521823}
   Save_As_Input: {fileID: 1063474829}
   Deck_List: {fileID: 1463133060}

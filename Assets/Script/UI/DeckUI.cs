@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
+using UnityEngine.SceneManagement;
 
 namespace TCGame.Client.UI
 {
@@ -26,6 +27,8 @@ namespace TCGame.Client.UI
         public Button Search_Button;//搜索按钮
         public Button Save_Button;//保存按钮
         public Button Save_As_Button;//另存按钮
+        public Button Delete_Button;//删除按钮
+        public Button Exit_Button;//退出按钮
         public Text Text_Search;//副卡组文本
         public GameObject Save_As_Input;//另存
         public GameObject Deck_List;//保存
@@ -61,8 +64,12 @@ namespace TCGame.Client.UI
         public static GridLayoutGroup extraDeckGroup;
         public static GridLayoutGroup secondDeckGroup;
 
+        //我们当前的卡组
+        private GameDeck currentDeck;
+
         public void LoadUI()
         {
+            currentDeck = null;
             cardImage = GameObject.Find("Card_Data_Pics").GetComponentInChildren<Image>();
             name_Text = GameObject.Find("Message_Name_Text").GetComponentInChildren<Text>();
             des_Text = GameObject.Find("Message_Des_Context").GetComponentInChildren<Text>();
@@ -87,7 +94,7 @@ namespace TCGame.Client.UI
             Save_As_InputField = Save_As_Input.GetComponentInChildren<InputField>();
 
             SetListOptions(Drop_Card_Type, Config.Types.Values.ToList(), true);
-            SetListOptions(Drop_Little_Type, new List<string>(), false); ;
+            SetListOptions(Drop_Little_Type, new List<string>(), false);
             SetListOptions(Drop_Att, Config.Attributes.Values.ToList(), true);
             SetListOptions(Drop_Race, Config.Races.Values.ToList(), true);
 
@@ -100,13 +107,33 @@ namespace TCGame.Client.UI
             initializeUIStr();
 
             //初始化我们的卡组以及组件
-            LoadDeck();
+            LoadDeck(Drop_Deck_List.value);
         }
-        private void LoadDeck()
+        private void DestoryListCard(List<GameObject> cardGameObjects)
+        {
+            foreach (var cardGameObject in cardGameObjects)
+                Destroy(cardGameObject);
+        }
+        private void ClearDeck()
+        {
+            DestoryListCard(Main_Card_PreFabs);
+            DestoryListCard(Extra_Card_PreFabs);
+            DestoryListCard(Second_Card_PreFabs);
+            //先清空我们的卡组
+            Main_Card_PreFabs.Clear();
+            Extra_Card_PreFabs.Clear();
+            Second_Card_PreFabs.Clear();
+
+            text_Main_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckMainText]}：0";
+            text_Extra_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckExtraText]}：0";
+            currentDeck = null;
+        }
+        private void LoadDeck(int index)
         {
             if (Drop_Deck_List.options.Count <= 0) return;
+            ClearDeck();
             //加载我们的卡组到我们的UI
-            string text = Drop_Deck_List.options[Drop_Deck_List.value].text;
+            string text = Drop_Deck_List.options[index].text;
             if (text.Equals("")) return;
             string filePath = $"{Application.dataPath}/Resources/Deck/{text}.json";
             if (!File.Exists(filePath)) return;
@@ -118,32 +145,34 @@ namespace TCGame.Client.UI
             }
             catch (Exception e) { Log.WriteLog(e.Message); }
             if (deck == null) return;
+            currentDeck = deck;
             //先预先设置spcing的尺寸
-            mainDeckGroup.spacing = new Vector2(deck.MainSpacing[0], deck.MainSpacing[1]);
-            extraDeckGroup.spacing = new Vector2(deck.ExtraSpacing[0], deck.ExtraSpacing[1]);
-            secondDeckGroup.spacing = new Vector2(deck.SecondSpacing[0], deck.SecondSpacing[1]);
-
-            //创建我们的UI对象并加载到对应卡组中，我感觉这么遍历很浪费，后面优化一下
-            foreach (var code in deck.MianCodes)
-            {
-                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
-                if (card == null) continue;
-                CreateCardGameObject(card);
-            }
-            foreach (var code in deck.ExtraCodes)
-            {
-                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
-                if (card == null) continue;
-                CreateCardGameObject(card);
-            }
-            foreach (var code in deck.SecondCodes)
-            {
-                ClientCard card = Game.Cards.Where(card => card != null && card.IsCode(code)).FirstOrDefault();
-                if (card == null) continue;
-                CreateCardGameObject(card);
-            }
+            mainDeckGroup.spacing = new Vector2(GetSpacingX(deck.MainSpacing), GetSpacingY(deck.MainSpacing));
+            extraDeckGroup.spacing = new Vector2(GetSpacingX(deck.ExtraSpacing), GetSpacingY(deck.ExtraSpacing));
+            secondDeckGroup.spacing = new Vector2(GetSpacingX(deck.SecondSpacing), GetSpacingY(deck.SecondSpacing));
+            //创建我们的UI对象并加载到对应卡组中
+            CreateCardGameObjectFromCode(deck.MianCodes);
+            CreateCardGameObjectFromCode(deck.ExtraCodes);
+            CreateCardGameObjectFromCode(deck.SecondCodes);
             text_Main_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckMainText]}：{Main_Card_PreFabs.Count}";
             text_Extra_Deck.text = $"{ Config.ConfigText[(int)ConfigKey.DeckExtraText]}：{Extra_Card_PreFabs.Count}";
+        }
+        private float GetSpacingX(float[] spacing)
+        {
+           return spacing == null ? -20.0f : spacing[0];
+        }
+        private float GetSpacingY(float[] spacing)
+        {
+            return spacing == null ? 0.0f : spacing[1];
+        }
+        private void CreateCardGameObjectFromCode(List<int> codes)
+        {
+            if (codes == null) return;
+            foreach (var code in codes)
+            {
+                if (!Game.CardsMap.ContainsKey(code)) continue;
+                CreateCardGameObject(Game.CardsMap[code]);
+            }
         }
         public void CreateCardGameObject(ClientCard card)
         {
@@ -193,14 +222,54 @@ namespace TCGame.Client.UI
         {
             Search_Button.onClick.AddListener(SearchCard);
             Save_As_Button.onClick.AddListener(SaveDeckAs);
+            Delete_Button.onClick.AddListener(RemoveDeck);
             Save_Button.onClick.AddListener(SaveDeck);
+            Exit_Button.onClick.AddListener(ExitDeckEdit);
             Drop_Card_Type.onValueChanged.AddListener(SelectDropType);
+            Drop_Deck_List.onValueChanged.AddListener(DeckListChange);
+           
         }
-        private void SaveDeck()
+        private void ExitDeckEdit()
+        {
+            //退出卡组编辑界面
+            //加载下一个场景
+            SceneManager.LoadScene("GameDuel");
+            //根据我们当前的卡组加载到决斗场景中
+
+            GameDueUI.playerDeck = currentDeck;
+            byte a = CoreApI.CreateSocketServer();
+            Debug.Log(a);
+
+        }
+        private void DeckListChange(int index)
+        {
+            LoadDeck(index);
+        }
+        private void RemoveDeck()
         {
             string text = Drop_Deck_List.options[Drop_Deck_List.value].text;
             if (text.Equals("")) return;
-            //保存我们当前的卡组数据到json
+            //先清空我们当前下的UI对象
+            ClearDeck();
+            //然后更新我们的options列表
+            int index = Drop_Deck_List.value;
+            Drop_Deck_List.options.RemoveAt(index);
+            if (index >= 0)
+            {
+
+                Drop_Deck_List.value = 0;
+                //要刷新一下，不刷新不会改变
+                Drop_Deck_List.RefreshShownValue();
+            }
+            //然后删除对应的文件
+            string filePath = $"{Application.dataPath}/Resources/Deck/{text}.json";
+            if (!File.Exists(filePath)) return;
+            File.Delete(filePath);
+            Debug.Log("文件删除成功！");
+        }
+        private GameDeck GetDeck()
+        {
+            if (currentDeck != null) return currentDeck;
             List<int> mainCodes = new List<int>();
             List<int> extraCodes = new List<int>();
             List<int> secondCodes = new List<int>();
@@ -219,9 +288,15 @@ namespace TCGame.Client.UI
                 ClientCard card = prefab.GetComponent<Card_Event>().card;
                 secondCodes.Add(card.GetCode());
             }
-            GameDeck deck = new GameDeck(mainCodes, extraCodes, secondCodes,new float[] { mainDeckGroup.spacing.x, mainDeckGroup.spacing.y },
+            return currentDeck = new GameDeck(mainCodes.Count > 0 ? mainCodes : null, extraCodes.Count > 0 ? extraCodes : null, secondCodes.Count > 0 ? secondCodes : null, new float[] { mainDeckGroup.spacing.x, mainDeckGroup.spacing.y },
                 new float[] { extraDeckGroup.spacing.x, extraDeckGroup.spacing.y }, new float[] { secondDeckGroup.spacing.x, secondDeckGroup.spacing.y });
-            string json = JsonConvert.SerializeObject(deck);
+        }
+        private void SaveDeck()
+        {
+            string text = Drop_Deck_List.options[Drop_Deck_List.value].text;
+            if (text.Equals("")) return;
+            //保存我们当前的卡组数据到json
+            string json = JsonConvert.SerializeObject(GetDeck());
             string path = $"{Application.dataPath}/Resources/Deck/{text}.json";
             try
             {
@@ -242,7 +317,7 @@ namespace TCGame.Client.UI
                 Debug.Log("请输入文字！");
                 return;
             }
-            GameDeck deck = new GameDeck(null, null, null,null,null,null);
+            GameDeck deck = GetDeck();
             string json = JsonConvert.SerializeObject(deck);
             string path = $"{Application.dataPath}/Resources/Deck/{text}.json";
             try
@@ -257,7 +332,10 @@ namespace TCGame.Client.UI
             Debug.Log("写入成功！");
             //这里我们更新一下上面的列表
             Drop_Deck_List.AddOptions(new List<string> { text });
-
+            //同时要设置列表当前的值为最后加入的值
+            Drop_Deck_List.value = Drop_Deck_List.options.Count - 1;
+            //把我们的text置空
+            Save_As_InputField.text = "";
         }
         private void RefreshUI()
         {
@@ -356,6 +434,7 @@ namespace TCGame.Client.UI
             //不销毁而是隐藏，减少内存开辟的时间消耗
             for (int i = 0; i < Card_Menu_Datas.Count; i++) Card_Menu_Datas[i].SetActive(false);
         }
+
         public void GetCard()
         {
             Func<ClientCard, bool> filterFunc = FilterCardFunc();

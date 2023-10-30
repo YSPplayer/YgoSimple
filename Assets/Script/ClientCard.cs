@@ -4,6 +4,7 @@ namespace TCGame.Client
 {
     public class ClientCard
     {
+        
         public int Code { get; private set; }
         public int[] SetCode { get; private set; }//×Ö¶Î
         public string Name { get; private set; }

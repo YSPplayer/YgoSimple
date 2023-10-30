@@ -12,11 +12,14 @@ namespace TCGame.Client
 {
     public class Game : MonoBehaviour
     {
-        public static List<ClientCard> Cards { get; private set; }//我们的数据库
+        public static Dictionary<int, ClientCard> CardsMap; //使用树形结构存储索引效率会提升
+        public static List<ClientCard> Cards;//我们正常遍历使用到的结构
         public static Config Config { get; private set; }//配置文件
 
         private void Awake()
         {
+            CardsMap = new Dictionary<int, ClientCard>();
+            Cards = new List<ClientCard>();
             LoadData();
             Initialize();
         }
@@ -58,7 +61,7 @@ namespace TCGame.Client
                                 while (reader.Read())
                                 {
                                     int code = reader.GetInt32(reader.GetOrdinal("id"));
-                                    if (Cards.Any(card => card != null && card.IsCode(code))) continue;
+                                    if(CardsMap.ContainsKey(code)) continue;
                                     long type = reader.GetInt64(reader.GetOrdinal("type"));
                                     ClientCard card = new ClientCard
                                     (
@@ -76,6 +79,7 @@ namespace TCGame.Client
                                         reader.GetInt32(reader.GetOrdinal("def")),
                                         Value.ValueType.Normal
                                     );
+                                    CardsMap.Add(code,card);
                                     Cards.Add(card);
                                 }
                                 reader.Close();
@@ -115,9 +119,15 @@ namespace TCGame.Client
         private void LoadCardsDataFromJson()
         {
             string filePath = $"{Application.dataPath}/Resources/Data/CardData.json";
-            if (File.Exists(filePath))  
+            if (File.Exists(filePath))
+            {
                 Cards = JsonConvert.DeserializeObject<List<ClientCard>>(File.ReadAllText(filePath, Encoding.UTF8));
-            else 
+                foreach (var card in Cards)
+                {
+                    CardsMap.Add(card.Code, card);
+                }
+            }
+            else
                 Log.WriteLog("json数据库不存在！");
         }
     }

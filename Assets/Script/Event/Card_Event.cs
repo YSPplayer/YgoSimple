@@ -37,7 +37,7 @@ namespace TCGame.Client.Event
         }
         public void OnDrag(PointerEventData eventData)
         {
-            transform.position = eventData.position;
+            //transform.position = eventData.position;
         }
     }
 }
