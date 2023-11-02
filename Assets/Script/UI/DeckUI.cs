@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using TCGame.Client.Enum;
 using TCGame.Client.Event;
 using TCGame.Client.Deck;
+using TCGame.Client.Core;
+using TCGame.Client.CSocket;
 using System.Linq;
 using Newtonsoft.Json;
 using System;
@@ -239,7 +241,11 @@ namespace TCGame.Client.UI
             GameDueUI.playerDeck = currentDeck;
             byte a = CoreApI.CreateSocketServer();
             Debug.Log(a);
-
+            a = CoreApI.BindSocketServer();
+            Debug.Log(a);
+            CoreApI.StartServer();
+            bool res = ClientSocket.InitClientSocket();
+            Debug.Log(res);
         }
         private void DeckListChange(int index)
         {
