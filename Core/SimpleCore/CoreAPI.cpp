@@ -12,6 +12,6 @@ using namespace Core::Socket;
 	 //开始线程
 	 SocketManger::Start();
  }
- void Core::CloseServer() {
-	 SocketManger::serverLoop = false;
+ UINT8 Core::CloseServer() {
+	 return SocketManger::Close();
  }

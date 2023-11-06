@@ -11,7 +11,7 @@ namespace Core {
 		//开启异步线程服务器
 		COREAPI void StartServer();
 		//停止异步线程服务器
-		COREAPI void CloseServer();
+		COREAPI UINT8 CloseServer();
 	}
 }
 

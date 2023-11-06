@@ -236,16 +236,13 @@ namespace TCGame.Client.UI
             //退出卡组编辑界面
             //加载下一个场景
             SceneManager.LoadScene("GameDuel");
-            //根据我们当前的卡组加载到决斗场景中
-
             GameDueUI.playerDeck = currentDeck;
-            byte a = CoreApI.CreateSocketServer();
-            Debug.Log(a);
-            a = CoreApI.BindSocketServer();
-            Debug.Log(a);
-            CoreApI.StartServer();
-            bool res = ClientSocket.InitClientSocket();
-            Debug.Log(res);
+            if (!SocketManage.StartServer()) SocketManage.CloseServer();
+            if (!SocketManage.InitClientSocket()) return;
+
+            
+
+
         }
         private void DeckListChange(int index)
         {

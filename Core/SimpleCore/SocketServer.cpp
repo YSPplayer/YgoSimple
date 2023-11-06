@@ -1,5 +1,4 @@
 #include "SocketServer.h"
-
 using namespace Core::Socket;
 //static成员变量要初始化，不初始化编译器报错，这里我们直接把它写出来就初始化了
 bool SocketManger::serverLoop = false;
@@ -28,6 +27,21 @@ UINT8 SocketManger::Bind() {
 	if(ret == SOCKET_ERROR) return ERROR_BIND_SOCKET;
 	if(listen(serverListen,10) == SOCKET_ERROR) return ERROR_BIND_LISTEN;
 	return SUCCESS_BIND;
+}
+UINT8 SocketManger::Close() {
+	SocketManger::serverLoop = false;
+#ifdef SYSTEM_WINDOWS
+	UINT8 ret;
+	if(closesocket(SocketManger::serverListen) == SOCKET_ERROR) {
+		ret = ERROR_CLOSE;
+	}
+	else 
+	{
+		ret = SUCCESS_CLOSE;
+	}
+	WSACleanup();//清理winsock库
+#endif // SYSTEM_WINDOWS
+	return ret;
 }
 void SocketManger::Start() {
 	//对象函数不能直接被线程调用到，要用到绑定器
@@ -66,6 +80,8 @@ void SocketManger::Receive() {
 				int ret = recv(socket,buffer,1024,0);//接收客户端的数据
 				if(ret > 0) {
 					//处理客户端数据
+					//测试发送
+					send(socket,buffer,std::strlen(buffer),0);
 				} else {
 					//断开连接，移除元数据中的当前元素
 					FD_CLR(socket,&fd_read);
